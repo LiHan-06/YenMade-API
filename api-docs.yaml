@@ -23,26 +23,43 @@ paths:
       tags:
         - 產品資訊
       summary: 取得所有商品（含變體）
-      description: >
-        可以帶 query `select=*,variants:product_variants(id,name,price,stock)` 
-        取得產品及所有規格資訊
-      parameters:
-        - in: query
-          name: select
-          required: false
-          schema:
-            type: string
-          example: "*,variants:product_variants(id,name,price,stock)"
-          description: "Supabase REST API 用法，選擇回傳欄位"
+      description: |
+        前端呼叫時會自動帶回每個商品的 variants（規格資料）。
+        你可以直接使用 `variants` 陣列渲染每個規格。
       responses:
         '200':
-          description: 商品列表（包含變體）
+          description: 商品列表（含變體）
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Product'
+              example:
+                - id: "23d5e2f5-1bfb-4a3e-9348-dbc1c2a23b59"
+                  title: "檸檬老醬蘿蔔"
+                  category: "熱門商品"
+                  description: "嚴選爽脆白蘿蔔，融合新鮮檸檬的清香與老薑的暖香..."
+                  image_url: "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo.png"
+                  images_url:
+                    - "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo_bg.png"
+                  origin:
+                    白蘿蔔: "台東"
+                    檸檬: "屏東"
+                    老薑: "雲林"
+                  price: 300
+                  num: 1
+                  summary: "爽脆白蘿蔔，檸檬清香交織老薑暖韻，酸甜清爽、開胃耐吃。"
+                  ingredients: "白蘿蔔、新鮮檸檬汁、老薑、冰糖、食鹽、醋（釀造醋)"
+                  variants:
+                    - id: "3dc847e3-af2c-4e52-8ad5-35ff1f34f90e"
+                      name: "500ml 慢醃大罐"
+                      price: 500
+                      stock: 8
+                    - id: "f4c9dffd-d530-4f9d-ac23-aba57620c5eb"
+                      name: "200ml 慢醃迷你"
+                      price: 300
+                      stock: 36
     # post:
     #   summary: 新增商品
     #   requestBody:
@@ -59,9 +76,6 @@ paths:
       tags:
         - 產品資訊
       summary: 取得單一商品（含變體）
-      description: >
-        可以帶 query `select=*,variants:product_variants(id,name,price,stock)` 
-        取得單一商品及其規格資訊
       parameters:
         - in: path
           name: id
@@ -69,20 +83,38 @@ paths:
           schema:
             type: string
           description: 商品 ID
-        - in: query
-          name: select
-          required: false
-          schema:
-            type: string
-          example: "*,variants:product_variants(id,name,price,stock)"
-          description: "Supabase REST API 用法，選擇回傳欄位"
       responses:
         '200':
-          description: 單一商品（包含變體）
+          description: 單一商品（含變體）
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Product'
+              example:
+                id: "23d5e2f5-1bfb-4a3e-9348-dbc1c2a23b59"
+                title: "檸檬老醬蘿蔔"
+                category: "熱門商品"
+                description: "嚴選爽脆白蘿蔔，融合新鮮檸檬的清香與老薑的暖香..."
+                image_url: "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo.png"
+                images_url:
+                  - "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo_bg.png"
+                origin:
+                  白蘿蔔: "台東"
+                  檸檬: "屏東"
+                  老薑: "雲林"
+                price: 300
+                num: 1
+                summary: "爽脆白蘿蔔，檸檬清香交織老薑暖韻，酸甜清爽、開胃耐吃。"
+                ingredients: "白蘿蔔、新鮮檸檬汁、老薑、冰糖、食鹽、醋（釀造醋)"
+                variants:
+                  - id: "3dc847e3-af2c-4e52-8ad5-35ff1f34f90e"
+                    name: "500ml 慢醃大罐"
+                    price: 500
+                    stock: 8
+                  - id: "f4c9dffd-d530-4f9d-ac23-aba57620c5eb"
+                    name: "200ml 慢醃迷你"
+                    price: 300
+                    stock: 36
     # patch:
     #   summary: 修改商品
     #   parameters:
