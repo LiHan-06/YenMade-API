@@ -26,6 +26,23 @@ paths:
       description: |
         前端呼叫時會自動帶回每個商品的 variants（規格資料）。
         你可以直接使用 `variants` 陣列渲染每個規格。
+
+        前端取得方式：
+        - 呼叫此 API (`GET /products`)
+        - 每個 product 物件都包含 `variants` 陣列
+          範例：
+          ```json
+          {
+            "id": "23d5e2f5-1bfb-4a3e-9348-dbc1c2a23b59",
+            "title": "檸檬老醬蘿蔔",
+            "price": 300,
+            "variants": [
+              { "id": "3dc847e3-af2c-4e52-8ad5-35ff1f34f90e", "name": "500ml 慢醃大罐", "price": 500, "stock": 8 },
+              { "id": "f4c9dffd-d530-4f9d-ac23-aba57620c5eb", "name": "200ml 慢醃迷你", "price": 300, "stock": 36 }
+            ]
+          }
+          ```
+        - `variant.stock` 可用來判斷「庫存充足／不足」
       responses:
         '200':
           description: 商品列表（含變體）
