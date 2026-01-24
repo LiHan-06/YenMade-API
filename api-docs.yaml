@@ -22,10 +22,21 @@ paths:
     get:
       tags:
         - 產品資訊
-      summary: 取得所有商品
+      summary: 取得所有商品（含變體）
+      description: >
+        可以帶 query `select=*,variants:product_variants(id,name,price,stock)` 
+        取得產品及所有規格資訊
+      parameters:
+        - in: query
+          name: select
+          required: false
+          schema:
+            type: string
+          example: "*,variants:product_variants(id,name,price,stock)"
+          description: "Supabase REST API 用法，選擇回傳欄位"
       responses:
         '200':
-          description: 商品列表
+          description: 商品列表（包含變體）
           content:
             application/json:
               schema:
@@ -47,16 +58,27 @@ paths:
     get:
       tags:
         - 產品資訊
-      summary: 取得單一商品
+      summary: 取得單一商品（含變體）
+      description: >
+        可以帶 query `select=*,variants:product_variants(id,name,price,stock)` 
+        取得單一商品及其規格資訊
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
+          description: 商品 ID
+        - in: query
+          name: select
+          required: false
+          schema:
+            type: string
+          example: "*,variants:product_variants(id,name,price,stock)"
+          description: "Supabase REST API 用法，選擇回傳欄位"
       responses:
         '200':
-          description: 單一商品
+          description: 單一商品（包含變體）
           content:
             application/json:
               schema:
