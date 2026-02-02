@@ -13,7 +13,6 @@ tags:
 - name: 會員資訊
 - name: 優惠券
 - name: 購物車
-  description: 別用，還沒好！！！
 - name: 首頁
   description: 顧客好評
 servers:
@@ -130,7 +129,8 @@ paths:
         - in: query
           name: user_id
           required: true
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '200':
           description: 購物車列表
@@ -140,6 +140,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CartItem'
+
     post:
       tags:
         - 購物車
@@ -153,18 +154,70 @@ paths:
       responses:
         '201':
           description: 新增成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+
     delete:
       tags:
         - 購物車
-      summary: 清空購物車
+      summary: 清空使用者購物車
       parameters:
         - in: query
           name: user_id
           required: true
-          schema: { type: string }
+          schema:
+            type: string
       responses:
         '204':
-          description: 已清空
+          description: 已清空購物車
+
+  /carts/{cart_id}:
+    patch:
+      tags:
+        - 購物車
+      summary: 更新購物車商品數量
+      parameters:
+        - in: path
+          name: cart_id
+          required: true
+          schema:
+            type: string
+          description: 購物車項目 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  example: 3
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+
+    delete:
+      tags:
+        - 購物車
+      summary: 刪除購物車單一商品
+      parameters:
+        - in: path
+          name: cart_id
+          required: true
+          schema:
+            type: string
+          description: 購物車項目 ID
+      responses:
+        '204':
+          description: 刪除成功
+
 
   # -------------------------
   # 優惠券 API
