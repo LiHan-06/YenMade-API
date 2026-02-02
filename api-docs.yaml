@@ -4,38 +4,29 @@ info:
   version: 1.0.0
   description: |
     **Supabase 前端設定方式**：
-      - supabaseUrl: `https://kficknhvujgeaooqxiif.supabase.co`<br><br>
+      - supabaseUrl: `https://kficknhvujgeaooqxiif.supabase.co`
       - supabaseAnonKey: `找俐涵拿`
 tags:
-- name: Auth
-  description: 註冊與登入 API
-- name: 產品資訊
-- name: 會員資訊
-- name: 優惠券
-- name: 購物車
-- name: 首頁
-  description: 顧客好評
+  - name: Auth
+    description: 註冊與登入 API
+  - name: 產品資訊
+  - name: 購物車
+  - name: 優惠券
+  - name: 會員資訊
+  - name: 首頁
+    description: 顧客好評
 servers:
   - url: https://kficknhvujgeaooqxiif.supabase.co/rest/v1
 
 paths:
+
   # -------------------------
   # Auth API
   # -------------------------
   /auth/signup:
     post:
-      tags:
-        - Auth
+      tags: [Auth]
       summary: 註冊新帳號（Email + Password）
-      description: |
-        使用者輸入 Email 與密碼即可註冊。
-        註冊後會自動在 profiles table 建立對應資料。
-        **前端範例（Supabase JS）**：
-        ```javascript
-        import { createClient } from '@supabase/supabase-js'
-        const supabase = createClient('https://kficknhvujgeaooqxiif.supabase.co', '你的 anon key')
-        const { data, error } = await supabase.auth.signUp({ email: 'user@example.com', password: 'yourPassword123' })
-        ```
       requestBody:
         required: true
         content:
@@ -55,15 +46,8 @@ paths:
 
   /auth/signin:
     post:
-      tags:
-        - Auth
+      tags: [Auth]
       summary: 使用 Email + Password 登入
-      description: |
-        登入成功後會回傳 JWT，可用於呼叫其他受保護 API。
-        **前端範例（Supabase JS）**：
-        ```javascript
-        const { data, error } = await supabase.auth.signInWithPassword({ email: 'user@example.com', password: 'yourPassword123' })
-        ```
       requestBody:
         required: true
         content:
@@ -86,8 +70,7 @@ paths:
   # -------------------------
   /products:
     get:
-      tags:
-        - 產品資訊
+      tags: [產品資訊]
       summary: 取得所有商品（含變體）
       responses:
         '200':
@@ -101,8 +84,7 @@ paths:
 
   /products/{id}:
     get:
-      tags:
-        - 產品資訊
+      tags: [產品資訊]
       summary: 取得單一商品（含變體）
       parameters:
         - in: path
@@ -122,18 +104,16 @@ paths:
   # -------------------------
   /carts:
     get:
-      tags:
-        - 購物車
-      summary: 取得使用者購物車
+      tags: [購物車]
+      summary: 取得使用者購物車列表
       parameters:
         - in: query
           name: user_id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
         '200':
-          description: 購物車列表
+          description: 使用者購物車列表
           content:
             application/json:
               schema:
@@ -142,8 +122,7 @@ paths:
                   $ref: '#/components/schemas/CartItem'
 
     post:
-      tags:
-        - 購物車
+      tags: [購物車]
       summary: 新增購物車項目
       requestBody:
         required: true
@@ -160,30 +139,26 @@ paths:
                 $ref: '#/components/schemas/CartItem'
 
     delete:
-      tags:
-        - 購物車
+      tags: [購物車]
       summary: 清空使用者購物車
       parameters:
         - in: query
           name: user_id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
         '204':
           description: 已清空購物車
 
   /carts/{cart_id}:
     patch:
-      tags:
-        - 購物車
+      tags: [購物車]
       summary: 更新購物車商品數量
       parameters:
         - in: path
           name: cart_id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
           description: 購物車項目 ID
       requestBody:
         required: true
@@ -192,9 +167,7 @@ paths:
             schema:
               type: object
               properties:
-                quantity:
-                  type: integer
-                  example: 3
+                quantity: { type: integer, example: 3 }
       responses:
         '200':
           description: 更新成功
@@ -204,28 +177,24 @@ paths:
                 $ref: '#/components/schemas/CartItem'
 
     delete:
-      tags:
-        - 購物車
+      tags: [購物車]
       summary: 刪除購物車單一商品
       parameters:
         - in: path
           name: cart_id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
           description: 購物車項目 ID
       responses:
         '204':
           description: 刪除成功
-
 
   # -------------------------
   # 優惠券 API
   # -------------------------
   /coupons:
     get:
-      tags:
-        - 優惠券
+      tags: [優惠券]
       summary: 取得可用優惠券
       responses:
         '200':
@@ -236,9 +205,9 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Coupon'
+
     post:
-      tags:
-        - 優惠券
+      tags: [優惠券]
       summary: 套用優惠券
       requestBody:
         required: true
@@ -264,8 +233,7 @@ paths:
   # -------------------------
   /customer_reviews:
     get:
-      tags:
-        - 首頁
+      tags: [首頁]
       summary: 取得顧客評論
       responses:
         '200':
@@ -282,8 +250,7 @@ paths:
   # -------------------------
   /users/{id}:
     get:
-      tags:
-        - 會員資訊
+      tags: [會員資訊]
       summary: 取得使用者資訊
       parameters:
         - name: id
@@ -299,8 +266,7 @@ paths:
                 $ref: '#/components/schemas/User'
 
     patch:
-      tags:
-        - 會員資訊
+      tags: [會員資訊]
       summary: 更新使用者資料（可部分更新）
       parameters:
         - name: id
@@ -323,6 +289,7 @@ paths:
 
 components:
   schemas:
+
     AuthResponse:
       type: object
       properties:
@@ -395,7 +362,9 @@ components:
         product: { $ref: '#/components/schemas/Product' }
         variant: { $ref: '#/components/schemas/Variant' }
         quantity: { type: integer }
-        subtotal: { type: integer }
+        subtotal:
+          type: integer
+          description: 單項金額 = variant.price * quantity
 
     CartItemInput:
       type: object
