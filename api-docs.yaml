@@ -5,8 +5,10 @@ info:
   description: |
     **Supabase 前端設定方式**：
       - supabaseUrl: `https://kficknhvujgeaooqxiif.supabase.co`<br><br>
-      - supabaseAnonKey:`找俐涵拿`
+      - supabaseAnonKey: `找俐涵拿`
 tags:
+- name: Auth
+  description: 註冊與登入 API
 - name: 產品資訊
 - name: 會員資訊
 - name: 優惠券
@@ -17,82 +19,88 @@ tags:
   description: 顧客好評
 servers:
   - url: https://kficknhvujgeaooqxiif.supabase.co/rest/v1
+
 paths:
+  # -------------------------
+  # Auth API
+  # -------------------------
+  /auth/signup:
+    post:
+      tags:
+        - Auth
+      summary: 註冊新帳號（Email + Password）
+      description: |
+        使用者輸入 Email 與密碼即可註冊。
+        註冊後會自動在 profiles table 建立對應資料。
+        **前端範例（Supabase JS）**：
+        ```javascript
+        import { createClient } from '@supabase/supabase-js'
+        const supabase = createClient('https://kficknhvujgeaooqxiif.supabase.co', '你的 anon key')
+        const { data, error } = await supabase.auth.signUp({ email: 'user@example.com', password: 'yourPassword123' })
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, example: "user@example.com" }
+                password: { type: string, example: "yourPassword123" }
+      responses:
+        '200':
+          description: 註冊成功，回傳使用者資訊
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/signin:
+    post:
+      tags:
+        - Auth
+      summary: 使用 Email + Password 登入
+      description: |
+        登入成功後會回傳 JWT，可用於呼叫其他受保護 API。
+        **前端範例（Supabase JS）**：
+        ```javascript
+        const { data, error } = await supabase.auth.signInWithPassword({ email: 'user@example.com', password: 'yourPassword123' })
+        ```
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, example: "user@example.com" }
+                password: { type: string, example: "yourPassword123" }
+      responses:
+        '200':
+          description: 登入成功，回傳 session 與使用者資訊
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  # -------------------------
+  # 產品 API
+  # -------------------------
   /products:
     get:
       tags:
         - 產品資訊
       summary: 取得所有商品（含變體）
-      description: |
-        前端呼叫時會自動帶回每個商品的 `variants`（規格資料）。
-        你可以直接使用 `variants` 陣列渲染每個規格。
-
-        **前端範例（Supabase JS）**：
-        ```javascript
-        import { createClient } from '@supabase/supabase-js'
-
-        const supabaseUrl = 'https://kficknhvujgeaooqxiif.supabase.co'
-        const supabaseAnonKey = '你的 anon key'
-        const supabase = createClient(supabaseUrl, supabaseAnonKey)
-
-        async function getProducts() {
-          const { data, error } = await supabase
-            .from('products')
-            .select('*,variants:product_variants(id,name,price,stock)') // 取得產品 + 變體
-
-          if (error) console.error(error)
-          else console.log(data) // data 是陣列，每個 product 都帶有 variants 陣列
-        }
-
-        getProducts()
-        ```
-
-        > 小提醒：`variant.stock` 可用來判斷「庫存充足／不足」
       responses:
         '200':
-          description: 商品列表（含變體）
+          description: 商品列表
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Product'
-              example:
-                - id: "23d5e2f5-1bfb-4a3e-9348-dbc1c2a23b59"
-                  title: "檸檬老醬蘿蔔"
-                  category: "熱門商品"
-                  description: "嚴選爽脆白蘿蔔，融合新鮮檸檬的清香與老薑的暖香..."
-                  image_url: "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo.png"
-                  images_url:
-                    - "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo_bg.png"
-                  origin:
-                    白蘿蔔: "台東"
-                    檸檬: "屏東"
-                    老薑: "雲林"
-                  price: 300
-                  num: 1
-                  summary: "爽脆白蘿蔔，檸檬清香交織老薑暖韻，酸甜清爽、開胃耐吃。"
-                  ingredients: "白蘿蔔、新鮮檸檬汁、老薑、冰糖、食鹽、醋（釀造醋)"
-                  variants:
-                    - id: "3dc847e3-af2c-4e52-8ad5-35ff1f34f90e"
-                      name: "500ml 慢醃大罐"
-                      price: 500
-                      stock: 8
-                    - id: "f4c9dffd-d530-4f9d-ac23-aba57620c5eb"
-                      name: "200ml 慢醃迷你"
-                      price: 300
-                      stock: 36
-    # post:
-    #   summary: 新增商品
-    #   requestBody:
-    #     required: true
-    #     content:
-    #       application/json:
-    #         schema:
-    #           $ref: '#/components/schemas/ProductInput'
-    #   responses:
-    #     '201':
-    #       description: 新增成功
+
   /products/{id}:
     get:
       tags:
@@ -102,94 +110,18 @@ paths:
         - in: path
           name: id
           required: true
-          schema:
-            type: string
-          description: 商品 ID
+          schema: { type: string }
       responses:
         '200':
-          description: 單一商品（含變體）
+          description: 單一商品
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Product'
-              example:
-                id: "23d5e2f5-1bfb-4a3e-9348-dbc1c2a23b59"
-                title: "檸檬老醬蘿蔔"
-                category: "熱門商品"
-                description: "嚴選爽脆白蘿蔔，融合新鮮檸檬的清香與老薑的暖香..."
-                image_url: "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo.png"
-                images_url:
-                  - "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo_bg.png"
-                origin:
-                  白蘿蔔: "台東"
-                  檸檬: "屏東"
-                  老薑: "雲林"
-                price: 300
-                num: 1
-                summary: "爽脆白蘿蔔，檸檬清香交織老薑暖韻，酸甜清爽、開胃耐吃。"
-                ingredients: "白蘿蔔、新鮮檸檬汁、老薑、冰糖、食鹽、醋（釀造醋)"
-                variants:
-                  - id: "3dc847e3-af2c-4e52-8ad5-35ff1f34f90e"
-                    name: "500ml 慢醃大罐"
-                    price: 500
-                    stock: 8
-                  - id: "f4c9dffd-d530-4f9d-ac23-aba57620c5eb"
-                    name: "200ml 慢醃迷你"
-                    price: 300
-                    stock: 36
-    # patch:
-    #   summary: 修改商品
-    #   parameters:
-    #     - in: path
-    #       name: id
-    #       required: true
-    #       schema:
-    #         type: string
-    #   requestBody:
-    #     required: true
-    #     content:
-    #       application/json:
-    #         schema:
-    #           $ref: '#/components/schemas/ProductInput'
-    #   responses:
-    #     '200':
-    #       description: 修改成功
-    # delete:
-    #   summary: 刪除商品
-    #   parameters:
-    #     - in: path
-    #       name: id
-    #       required: true
-    #       schema:
-    #         type: string
-    #   responses:
-    #     '204':
-    #       description: 刪除成功
 
-  # /product_variants:
-  #   get:
-  #     summary: 取得商品變體
-  #     responses:
-  #       '200':
-  #         description: 變體列表
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/ProductVariant'
-    # post:
-    #   summary: 新增商品變體
-    #   requestBody:
-    #     required: true
-    #     content:
-    #       application/json:
-    #         schema:
-    #           $ref: '#/components/schemas/ProductVariantInput'
-    #   responses:
-    #     '201':
-    #       description: 新增成功
-
+  # -------------------------
+  # 購物車 API
+  # -------------------------
   /carts:
     get:
       tags:
@@ -199,8 +131,7 @@ paths:
         - in: query
           name: user_id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
         '200':
           description: 購物車列表
@@ -231,12 +162,14 @@ paths:
         - in: query
           name: user_id
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
         '204':
           description: 已清空
 
+  # -------------------------
+  # 優惠券 API
+  # -------------------------
   /coupons:
     get:
       tags:
@@ -262,10 +195,8 @@ paths:
             schema:
               type: object
               properties:
-                user_id:
-                  type: string
-                coupon_code:
-                  type: string
+                user_id: { type: string }
+                coupon_code: { type: string }
       responses:
         '200':
           description: 回傳折扣金額
@@ -274,9 +205,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  discount_amount:
-                    type: integer
+                  discount_amount: { type: integer }
 
+  # -------------------------
+  # 顧客評論 API
+  # -------------------------
   /customer_reviews:
     get:
       tags:
@@ -291,6 +224,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CustomerReview'
+
+  # -------------------------
+  # 會員資訊 API
+  # -------------------------
   /users/{id}:
     get:
       tags:
@@ -299,10 +236,8 @@ paths:
       parameters:
         - name: id
           in: path
-          description: 使用者ID
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       responses:
         '200':
           description: 使用者資訊
@@ -318,10 +253,8 @@ paths:
       parameters:
         - name: id
           in: path
-          description: 使用者ID
           required: true
-          schema:
-            type: string
+          schema: { type: string }
       requestBody:
         required: true
         content:
@@ -336,125 +269,82 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
 
-
 components:
   schemas:
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        session:
+          type: object
+          properties:
+            access_token: { type: string }
+            refresh_token: { type: string }
+            expires_in: { type: integer }
+
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string }
+        full_name: { type: string }
+        phone: { type: string }
+        address: { type: string }
+        title: { type: string }
+        birthday: { type: string, format: date }
+
+    UserInput:
+      type: object
+      properties:
+        email: { type: string, nullable: true }
+        full_name: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        address: { type: string, nullable: true }
+        title: { type: string, nullable: true }
+        birthday: { type: string, format: date }
+
     Product:
       type: object
       properties:
-        id: 
-           type: string
-           example: "23d5e2f5-1bfb-4a3e-9348-dbc1c2a23b59"
-        title:
-          type: string
-          example: "檸檬老醬蘿蔔"
-        category:
-          type: string 
-          example: "熱門商品"
-        description:
-          type: string
-          example: "嚴選爽脆白蘿蔔，融合新鮮檸檬的清香與老薑的暖香，經細心醃漬，使酸、甜、微辣層次分明。入口先是檸檬的清爽酸甜，隨後薑香緩緩散開，最後是蘿蔔的脆口回甘，適合佐餐或作為開胃小菜。"
-        image_url:
-          type: string
-          example: "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo.png"
-        images_url: 
+        id: { type: string }
+        title: { type: string }
+        category: { type: string }
+        description: { type: string }
+        image_url: { type: string }
+        images_url:
           type: array
-          items: 
-             type: string 
-          example:
-            - "https://kficknhvujgeaooqxiif.supabase.co/storage/v1/object/public/products/ningmeng_laojiang_luobo_bg.png"
-        origin: 
+          items: { type: string }
+        origin:
           type: object
-          additionalProperties:
-            type: string
-          example:
-            白蘿蔔: "台東"
-            檸檬: "屏東"
-            老薑: "雲林"
-        price: 
-           type: integer 
-           description: 商品最低售價（顯示用，實際以 variant.price 為準）
-           example: 300
-        num: 
-          type: integer 
-          description: 商品頁預設選擇數量
-          example: 1
-        summary: 
-           type: string 
-           example: "爽脆白蘿蔔，檸檬清香交織老薑暖韻，酸甜清爽、開胃耐吃。"
-        ingredients: 
-           type: string 
-           example: "白蘿蔔、新鮮檸檬汁、老薑、冰糖、食鹽、醋（釀造醋)"
+          additionalProperties: { type: string }
+        price: { type: integer }
+        num: { type: integer }
+        summary: { type: string }
+        ingredients: { type: string }
         variants:
           type: array
-          description: 商品的所有規格
           items:
             $ref: '#/components/schemas/Variant'
+
     Variant:
       type: object
       properties:
-        id:
-          type: string
-          example: "3dc847e3-af2c-4e52-8ad5-35ff1f34f90e"
-        name:
-          type: string
-          example: "500ml 慢醃大罐"
-        price:
-          type: integer
-          example: 500
-        stock:
-          type: integer
-          description: 剩餘庫存數量（前端可依此判斷是否顯示庫存充足／不足）
-          example: 8
-    # ProductInput:
-    #   type: object
-    #   properties:
-    #     title: { type: string }
-    #     category: { type: string }
-    #     description: { type: string }
-    #     image_url: { type: string }
-    #     images_url: 
-    #       type: array
-    #       items: { type: string }
-    #     origin: 
-    #       type: object
-    #     default_variant_id: { type: string }
-    #     selected_variant_id: { type: string }
-    #     price: { type: integer }
-    #     num: { type: integer }
-    #     is_enabled: { type: boolean }
-    #     summary: { type: string }
-    #     ingredients: { type: string }
-    ProductVariant:
-      type: object
-      properties:
-        id: 
-           type: string 
-           format: uuid
-        product_id: { type: string }
+        id: { type: string }
         name: { type: string }
-        size: { type: string }
         price: { type: integer }
-        unit: { type: string }
         stock: { type: integer }
-    # ProductVariantInput:
-    #   type: object
-    #   properties:
-    #     product_id: { type: string }
-    #     name: { type: string }
-    #     size: { type: string }
-    #     price: { type: integer }
-    #     unit: { type: string }
-    #     stock: { type: integer }
+
     CartItem:
       type: object
       properties:
         cart_id: { type: string }
         user_id: { type: string }
         product: { $ref: '#/components/schemas/Product' }
-        variant: { $ref: '#/components/schemas/ProductVariant' }
+        variant: { $ref: '#/components/schemas/Variant' }
         quantity: { type: integer }
         subtotal: { type: integer }
+
     CartItemInput:
       type: object
       properties:
@@ -462,6 +352,7 @@ components:
         product_id: { type: string }
         variant_id: { type: string }
         quantity: { type: integer }
+
     Coupon:
       type: object
       properties:
@@ -474,69 +365,12 @@ components:
         start_date: { type: string, format: date }
         end_date: { type: string, format: date }
         is_active: { type: boolean }
+
     CustomerReview:
       type: object
       properties:
         id: { type: string }
-        name:
-          type: string 
-          example: "吳伯伯"
-        occupation:
-          type: string
-          example: "銀髮養生族"
+        name: { type: string }
+        occupation: { type: string }
         photo_url: { type: string }
-        comment:
-          type: string
-          example: "我跟太太年紀大了，醫生叫我們少油少鹽，但常常吃得太清淡，連飯都吞不下去。兒子有天帶回你們的醃洋蔥，說我們可以試試看，結果我們吃了一整碗粥都覺得有味道了。太太還特地寫紙條貼冰箱：『記得補貨』。我們現在會一起挑味道，每一款都不錯吃，也健康。"
-    User:
-      type: object
-      description: 使用者完整資訊（包含系統欄位 id）
-      properties:
-        id: { type: string }
-        email: 
-          type: string 
-          example: "2006@yen.made.com"
-        full_name: 
-          type: string 
-          example: "王小俐"
-        phone: 
-          type: string 
-          example: "0911222333"
-        address:
-          type: string 
-          example: "台中市西屯區六角路66號"
-        title:
-          type: string
-          example: "女士"
-        birthday: 
-          type: string
-          format: date
-          example: "1999-06-06"
-    UserInput:
-      type: object
-      description: 更新使用者資料用，可部分更新，未填欄位不會被修改
-      properties:
-        email:
-          type: string
-          nullable: true
-          example: "2006@yen.made.com"
-        full_name:
-          type: string
-          nullable: true
-          example: "王小俐"
-        phone:
-          type: string
-          nullable: true
-          example: "0911222333"
-        address:
-          type: string
-          nullable: true
-          example: "台中市西屯區六角路66號"
-        title:
-          type: string
-          nullable: true
-          example: "女士"
-        birthday:
-          type: string
-          format: date
-          example: "1999-06-06"
+        comment: { type: string }
