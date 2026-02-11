@@ -20,7 +20,6 @@ servers:
   - url: https://kficknhvujgeaooqxiif.supabase.co/rest/v1
 
 paths:
-
   # -------------------------
   # Auth API
   # -------------------------
@@ -101,89 +100,24 @@ paths:
                 $ref: '#/components/schemas/Product'
 
   # -------------------------
-  # 訂單 API
-  # -------------------------
-  # /orders:
-  #   post:
-  #     tags: [orders]
-  #     summary: 結帳，建立新訂單
-  #     description: |
-  #       將使用者購物車內的商品結算，建立一筆訂單與對應 order_items，並清空購物車。
-  #     requestBody:
-  #       required: true
-  #       content:
-  #         application/json:
-  #           schema:
-  #             type: object
-  #             properties:
-  #               user_id: { type: string, description: "使用者 ID" }
-  #               coupon_id: { type: string, nullable: true, description: "優惠券 ID，可選" }
-  #               recipient_name: { type: string }
-  #               recipient_phone: { type: string }
-  #               recipient_email: { type: string }
-  #               recipient_address: { type: string }
-  #               invoice_type:
-  #                 type: string
-  #                 enum: ['寄送發票', '通用載具']
-  #               note: { type: string, nullable: true }
-  #     responses:
-  #       '201':
-  #         description: 訂單建立成功
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/Order'
-
-  #   get:
-  #     tags: [orders]
-  #     summary: 取得使用者所有訂單
-  #     parameters:
-  #       - in: query
-  #         name: user_id
-  #         required: true
-  #         schema: { type: string }
-  #     responses:
-  #       '200':
-  #         description: 使用者訂單列表
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: array
-  #               items:
-  #                 $ref: '#/components/schemas/Order'
-
-  # /orders/{id}:
-  #   get:
-  #     tags: [orders]
-  #     summary: 查詢單筆訂單
-  #     parameters:
-  #       - in: path
-  #         name: id
-  #         required: true
-  #         schema: { type: string }
-  #     responses:
-  #       '200':
-  #         description: 單筆訂單明細
-  #         content:
-  #           application/json:
-  #             schema:
-  #               $ref: '#/components/schemas/OrderDetailed'
-
-  # -------------------------
   # 購物車 API
   # -------------------------
   /carts:
     get:
       tags: [購物車]
-      summary: 取得使用者購物車列表
+      summary: 取得購物車列表（會員或訪客）
       parameters:
         - in: query
           name: user_id
-          required: true
-          schema: { type: string }
+          required: false
+          schema: { type: string, nullable: true }
+        - in: query
+          name: guest_id
+          required: false
+          schema: { type: string, nullable: true }
       responses:
         '200':
-          description: 使用者購物車列表
+          description: 購物車列表
           content:
             application/json:
               schema:
@@ -193,7 +127,7 @@ paths:
 
     post:
       tags: [購物車]
-      summary: 新增購物車項目
+      summary: 新增購物車項目（會員或訪客）
       requestBody:
         required: true
         content:
@@ -210,12 +144,16 @@ paths:
 
     delete:
       tags: [購物車]
-      summary: 清空使用者購物車
+      summary: 清空購物車（會員或訪客）
       parameters:
         - in: query
           name: user_id
-          required: true
-          schema: { type: string }
+          required: false
+          schema: { type: string, nullable: true }
+        - in: query
+          name: guest_id
+          required: false
+          schema: { type: string, nullable: true }
       responses:
         '204':
           description: 已清空購物車
@@ -297,6 +235,73 @@ paths:
                 type: object
                 properties:
                   discount_amount: { type: integer }
+
+  # -------------------------
+  # 訂單 API
+  # -------------------------
+  /orders:
+    post:
+      tags: [orders]
+      summary: 結帳，建立新訂單
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id: { type: string }
+                coupon_id: { type: string, nullable: true }
+                recipient_name: { type: string }
+                recipient_phone: { type: string }
+                recipient_email: { type: string }
+                recipient_address: { type: string }
+                invoice_type:
+                  type: string
+                  enum: ['寄送發票', '通用載具']
+                note: { type: string, nullable: true }
+      responses:
+        '201':
+          description: 訂單建立成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+
+    get:
+      tags: [orders]
+      summary: 取得使用者所有訂單
+      parameters:
+        - in: query
+          name: user_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: 使用者訂單列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+
+  /orders/{id}:
+    get:
+      tags: [orders]
+      summary: 查詢單筆訂單
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: 單筆訂單明細
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetailed'
 
   # -------------------------
   # 顧客評論 API
@@ -423,13 +428,12 @@ components:
         price: { type: integer }
         stock: { type: integer }
 
-  
-
     CartItem:
       type: object
       properties:
         cart_id: { type: string }
-        user_id: { type: string }
+        user_id: { type: string, nullable: true }
+        guest_id: { type: string, nullable: true }
         product: { $ref: '#/components/schemas/Product' }
         variant: { $ref: '#/components/schemas/Variant' }
         quantity: { type: integer }
@@ -440,7 +444,8 @@ components:
     CartItemInput:
       type: object
       properties:
-        user_id: { type: string }
+        user_id: { type: string, nullable: true }
+        guest_id: { type: string, nullable: true }
         product_id: { type: string }
         variant_id: { type: string }
         quantity: { type: integer }
@@ -457,6 +462,9 @@ components:
         start_date: { type: string, format: date }
         end_date: { type: string, format: date }
         is_active: { type: boolean }
+        allowed_user_ids:
+          type: array
+          items: { type: string }
 
     CustomerReview:
       type: object
@@ -467,48 +475,50 @@ components:
         photo_url: { type: string }
         comment: { type: string }
 
-  # properties:
-  #       id: { type: string }
-  #       order_no: { type: string, description: "訂單編號，例如 YM-20260124-AB12" }
-  #       user_id: { type: string }
-  #       coupon_id: { type: string, nullable: true }
-  #       recipient_name: { type: string }
-  #       recipient_phone: { type: string }
-  #       recipient_email: { type: string }
-  #       recipient_address: { type: string }
-  #       invoice_type:
-  #         type: string
-  #         enum: ['寄送發票', '通用載具']
-  #       note: { type: string, nullable: true }
-  #       subtotal: { type: integer }
-  #       shipping_fee: { type: integer }
-  #       discount_amount: { type: integer }
-  #       total_amount: { type: integer }
-  #       status:
-  #         type: string
-  #         enum: ['訂單已成立','訂單已付款','配送中','已完成']
-  #       created_at: { type: string, format: date-time }
-  #       updated_at: { type: string, format: date-time }
+    Order:
+      type: object
+      properties:
+        id: { type: string }
+        order_no: { type: string }
+        user_id: { type: string }
+        coupon_id: { type: string, nullable: true }
+        recipient_name: { type: string }
+        recipient_phone: { type: string }
+        recipient_email: { type: string }
+        recipient_address: { type: string }
+        invoice_type:
+          type: string
+          enum: ['寄送發票', '通用載具']
+        note: { type: string, nullable: true }
+        subtotal: { type: integer }
+        shipping_fee: { type: integer }
+        discount_amount: { type: integer }
+        total_amount: { type: integer }
+        status:
+          type: string
+          enum: ['訂單已成立','訂單已付款','配送中','已完成']
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
 
-  # OrderItem:
-  #   type: object
-  #   properties:
-  #     id: { type: string }
-  #     product_id: { type: string }
-  #     variant_id: { type: string }
-  #     product_title: { type: string }
-  #     variant_name: { type: string }
-  #     variant_size: { type: string, nullable: true }
-  #     unit_price: { type: integer }
-  #     quantity: { type: integer }
-  #     subtotal: { type: integer }
+    OrderItem:
+      type: object
+      properties:
+        id: { type: string }
+        product_id: { type: string }
+        variant_id: { type: string }
+        product_title: { type: string }
+        variant_name: { type: string }
+        variant_size: { type: string, nullable: true }
+        unit_price: { type: integer }
+        quantity: { type: integer }
+        subtotal: { type: integer }
 
-  # OrderDetailed:
-  #   type: object
-  #   properties:
-  #     order:
-  #       $ref: '#/components/schemas/Order'
-  #     items:
-  #       type: array
-  #       items:
-  #         $ref: '#/components/schemas/OrderItem'
+    OrderDetailed:
+      type: object
+      properties:
+        order:
+          $ref: '#/components/schemas/Order'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
